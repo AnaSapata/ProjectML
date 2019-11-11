@@ -3,8 +3,12 @@
 
 
 library(caret)
+library(corrplot)
+library(rpart)
+library(rattle)
+library(e1071)
 
-setwd('/home/anasapata/Personal/datasciencecoursera/ML/Project')
+setwd('/home/anasapata/Personal/datasciencecoursera/ML/ProjectML')
 download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv', 'training.csv')
 download.file('https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv', 'testing.csv')
 
@@ -27,7 +31,15 @@ validation <- validation[, colSums(is.na(validation))==0]
 # Remove first 6 variables
 training <- training[,-c(1:6)]
 validation <- validation[,-c(1:6)]
-
+# remove variables with values ""
+training <- training[,-c(5:13)]
+training <- training[,-c(27:32)]
+training <- training[,-c(30:38)]
+training <- training[,-c(43:51)]
+validation <- validation[,-c(5:13)]
+validation <- validation[,-c(27:32)]
+validation <- validation[,-c(30:38)]
+validation <- validation[,-c(43:51)]
 
 # Split the training data between testing and training with 30%, 70% resp.
 set.seed(2711)
@@ -36,6 +48,27 @@ training <- training[inTrain,]
 testing <- training[-inTrain,]
 
 # See the correlation between variables
-cor_mat <- cor(training[,-86])
-corrplot(cor_mat, order = "FPC", method = "color", type = "upper", 
+correlation <- cor(training[,-53])
+corrplot(correlation, order = "FPC", method = "color", type = "upper", 
          tl.cex = 0.8, tl.col = rgb(0, 0, 0))
+
+# Get the columns with high correlation(over 0.75)
+high_cor = findCorrelation(correlation, cutoff=0.75)
+# Verify which are the columns with high correlation
+names(training)[high_cor]
+
+
+# 1st - Decision Trees
+set.seed(2711)
+DTFit1 <- rpart(classe ~ ., data=training, method="class")
+fancyRpartPlot(DTFit1)
+# Predictions
+predictDTFit1 <- predict(DTFit1, testing, type = "class")
+conf_mat_DTFit1 <- confusionMatrix(table(predictDTFit1, testing$classe))
+conf_mat_DTFit1
+
+
+# 2nd - Random Forest
+#controlRF <- trainControl(method="cv", number=3, verboseIter=FALSE)
+RFFit1 <- train(classe ~ ., data=training, method="rf")
+modRF1$finalModel

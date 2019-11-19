@@ -194,63 +194,162 @@ conf_mat_DTFit1</code></pre>
 ## Balanced Accuracy      0.9122   0.7681   0.8602   0.7990   0.8418</code></pre>
 <p>So, the estimated accuracy of the model is 75% and the estimated out-of-sample error is 25%.</p>
 
+
+
+
+
 <p> The second method that we used was Random Forest.</p>
 <pre class="r"><code># 2nd - Random Forest
 set.seed(2711)
 controlRF &lt;- trainControl(method="cv", number=3, verboseIter=FALSE)
 RFFit1 &lt;- train(classe ~ ., data=training, method="rf", trControl = controlRF)
 RFFit1$finalModel</code></pre>
-<pre><code> </code></pre>
-<img src = "DTFit1.png">
+<pre><code>## Call:
+##   randomForest(x = x, y = y, mtry = param$mtry) 
+##                 Type of random forest: classification
+##                       Number of trees: 500
+##  No. of variables tried at each split: 27
+##
+##          OOB estimate of  error rate: 0.73%
+##  Confusion matrix:
+##       A    B    C    D    E class.error
+##  A 3899    5    2    0    0 0.001792115
+##  B   20 2629    9    0    0 0.010910459
+##  C    0   15 2372    9    0 0.010016694
+##  D    0    0   25 2225    2 0.011989343
+##  E    0    1    5    7 2512 0.005148515</code></pre>
 <pre class="r"><code># Predictions
-predictDTFit1 &lt;- predict(DTFit1, testing, type = "class")
-conf_mat_DTFit1 &lt;  - confusionMatrix(table(predictDTFit1, testing$classe))
-# Accuracy = .75
-conf_mat_DTFit1</code></pre>
-<pre><code>## Confusion Matrix and Statistics
+predictRFFit1 &lt;- predict(RFFit1, testing)
+conf_mat_RFFit1 &lt;- confusionMatrix(table(predictRFFit1, testing$classe))
+# Accuracy = 1
+conf_mat_RFFit1
+</code></pre>
+<pre><code>##  Confusion Matrix and Statistics
 ##
 ##             
-## predictDTFit1    A    B    C    D    E
-##            A 1041  132   11   33   15
-##            B   35  483   63   55   64
-##            C   32   73  575   95   94
-##            D   44   62   40  435   38
-##            E   19   53   24   50  562
+##  predictRFFit1    A    B    C    D    E
+##              A 1171    0    0    0    0
+##              B    0  803    0    0    0
+##              C    0    0  713    0    0
+##              D    0    0    0  668    0
+##              E    0    0    0    0  773
 ##
-## Overall Statistics
+##  Overall Statistics
+##                                     
+##                 Accuracy : 1          
+##                   95% CI : (0.9991, 1)
+##      No Information Rate : 0.2837     
+##      P-Value [Acc &#8827; NIR] : &#8826; 2.2e-16  
+##                                     
+##                    Kappa : 1          
+##                                       
+##   Mcnemar's Test P-Value : NA         
+##
+##  Statistics by Class:
+##
+##                       Class: A Class: B Class: C Class: D Class: E
+##  Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
+##  Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
+##  Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+##  Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+##  Prevalence             0.2837   0.1945   0.1727   0.1618   0.1873
+##  Detection Rate         0.2837   0.1945   0.1727   0.1618   0.1873
+##  Detection Prevalence   0.2837   0.1945   0.1727   0.1618   0.1873
+##  Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000</code></pre>
+<p>So, the estimated accuracy of the model is 100% and the estimated out-of-sample error is 0%.</p>
+<pre class="r"><code>plot(RFFit1) </code></pre>
+<img src = "RF_plot.png">
+
+
+
+
+
+<p> The third method that we used was Generalized Boosted Regression Models.</p>
+<pre class="r"><code># 3rd - Generalized Boosted Regression Models
+set.seed(2711)
+controlGBM &lt;- trainControl(method = "repeatedcv", number = 5, repeats = 1)
+GBMFit1 &lt;- train( classe ~. , data = training, method = "gbm", trControl = controlGBM, verbose = FALSE)
+GBMFit1$finalModel
+print(GBMFit1)</code></pre>
+<pre><code>##  Stochastic Gradient Boosting 
+##
+##  13737 samples
+##     52 predictor
+##      5 classes: 'A', 'B', 'C', 'D', 'E' 
+##
+##  No pre-processing
+##  Resampling: Cross-Validated (5 fold, repeated 1 times) 
+##  Summary of sample sizes: 10989, 10990, 10988, 10991, 10990 
+##  Resampling results across tuning parameters:
+## 
+##    interaction.depth  n.trees  Accuracy   Kappa    
+##    1                   50      0.7547502  0.6890081
+##    1                  100      0.8158986  0.7669243
+##    1                  150      0.8505499  0.8108561
+##    2                   50      0.8511325  0.8113054
+##    2                  100      0.9034007  0.8777366
+##    2                  150      0.9296074  0.9109113
+##    3                   50      0.8959021  0.8681914
+##    3                  100      0.9401622  0.9242817
+##    3                  150      0.9603269  0.9498048
+##
+##  Tuning parameter 'shrinkage' was held constant at a value of 0.1
+##  Tuning parameter 'n.minobsinnode' was held constant at
+##   a value of 10
+##  Accuracy was used to select the optimal model using the largest value.
+##  The final values used for the model were n.trees = 150, interaction.depth = 3, shrinkage = 0.1 and n.minobsinnode = 10.</code></pre>
+<pre class="r"><code># Predictions
+predictGBMFit1 &lt;- predict(GBMFit1, testing)
+conf_mat_GBMFit1 &lt;- confusionMatrix(table(predictGBMFit1, testing$classe))
+# Accuracy = .9801
+conf_mat_GBMFit1
+</code></pre>
+<pre><code>##   Confusion Matrix and Statistics
+##
+##              
+##  predictGBMFit1    A    B    C    D    E
+##               A 1154   16    0    0    0
+##               B   10  773   15    0    3
+##               C    4   14  693   14    4
+##               D    3    0    4  650    3
+##               E    0    0    1    4  763
+##
+##  Overall Statistics
 ##                                          
-##               Accuracy : 0.75            
-##                 95% CI : (0.7365, 0.7631)
-##    No Information Rate : 0.2837          
-##    P-Value [Acc > NIR] : &lt; 2.2e-16       
+##                 Accuracy : 0.977           
+##                   95% CI : (0.9719, 0.9813)
+##      No Information Rate : 0.2837          
+##      P-Value [Acc &#8827; NIR] : &#8826; 2.2e-16       
 ##                                          
-##                  Kappa : 0.6834          
+##                    Kappa : 0.9709          
+##                                          
+##   Mcnemar's Test P-Value : NA              
 ##
-##  Mcnemar's Test P-Value : &lt; 2.2e-16       
+##  Statistics by Class:
 ##
-## Statistics by Class:
-##
-##                     Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.8890   0.6015   0.8065   0.6512   0.7270
-## Specificity            0.9354   0.9347   0.9139   0.9468   0.9565
-## Pos Pred Value         0.8450   0.6900   0.6617   0.7027   0.7938
-## Neg Pred Value         0.9551   0.9067   0.9577   0.9336   0.9383
-## Prevalence             0.2837   0.1945   0.1727   0.1618   0.1873
-## Detection Rate         0.2522   0.1170   0.1393   0.1054   0.1361
-## Detection Prevalence   0.2984   0.1696   0.2105   0.1500   0.1715
-## Balanced Accuracy      0.9122   0.7681   0.8602   0.7990   0.8418</code></pre>
-<p>So, the estimated accuracy of the model is 75% and the estimated out-of-sample error is 25%.</p>
+##                       Class: A Class: B Class: C Class: D Class: E
+##  Sensitivity            0.9855   0.9626   0.9719   0.9731   0.9871
+##  Specificity            0.9946   0.9916   0.9895   0.9971   0.9985
+##  Pos Pred Value         0.9863   0.9650   0.9506   0.9848   0.9935
+##  Neg Pred Value         0.9943   0.9910   0.9941   0.9948   0.9970
+##  Prevalence             0.2837   0.1945   0.1727   0.1618   0.1873
+##  Detection Rate         0.2796   0.1873   0.1679   0.1575   0.1848
+##  Detection Prevalence   0.2834   0.1940   0.1766   0.1599   0.1860
+##  Balanced Accuracy      0.9900   0.9771   0.9807   0.9851   0.9928 </code></pre>
+<p>So, the estimated accuracy of the model is 97.7% and the estimated out-of-sample error is 2.3%.</p>
+
+
 
 </div>
 <div id="predicting-for-test-data-set" class="section level2">
 <h2>Predicting for Test Data Set</h2>
-<p>Now, we apply the model to the original testing data set downloaded from the data source. We remove the <code>problem_id</code> column first.</p>
-<pre class="r"><code>result &lt;- predict(modelRf, testCleaned[, -length(names(testCleaned))])
-result</code></pre>
-<pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
-## Levels: A B C D E</code></pre>
+<p>Now, we apply the random forest model to the validation data set downloaded from the data source.</p>
+<pre class="r"><code># The model with the high accuracy was RF, so i will apply it to the validation set
+res &lt;- predict(RFFit1, validation); res</code></pre>
+<pre><code>##     [1] B A B A A E D B A A B C B A E E A B B B
+##    Levels: A B C D E</code></pre>
 </div>
-
+  
 </div>
 
 <script>

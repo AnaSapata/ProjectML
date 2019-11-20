@@ -20,4 +20,4 @@ https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
 The project consists in a R file with the code used to generate the results. The explanation of the R cde is on the html file that you can see in the following link:
 
-https://htmlpreview.github.io/?https://github.com/AnaSapata/ProjectML/master/report_test.html
+https://htmlpreview.github.io/?https://github.com/AnaSapata/ProjectML/master/report.html
